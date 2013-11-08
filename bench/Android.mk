@@ -98,7 +98,7 @@ LOCAL_C_INCLUDES := \
   external/skia/tools/flags
 
 LOCAL_MODULE := skia_bench
-
+LOCAL_ARM_MODE := arm
 LOCAL_MODULE_TAGS := optional
 
 #include stlport headers

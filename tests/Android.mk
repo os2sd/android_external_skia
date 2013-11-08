@@ -148,6 +148,8 @@ LOCAL_STATIC_LIBRARIES := libstlport_static
 
 LOCAL_MODULE_TAGS := eng tests
 
+LOCAL_ARM_MODE := arm
+
 #include stlport headers
 include external/stlport/libstlport.mk
 
