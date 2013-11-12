@@ -190,7 +190,7 @@ inline bool SkFixedNearlyZero(SkFixed x, SkFixed tolerance = SK_FixedNearlyZero)
     #define SkFixedSquare(a)    SkFixedSquare_longlong(a)
 #endif
 
-#if defined(SK_CPU_ARM)
+#if defined(SK_CPU_ARM) && (SK_ARM_ARCH > 6)
     /* This guy does not handle NaN or other obscurities, but is faster than
        than (int)(x*65536)
     */
