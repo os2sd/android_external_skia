@@ -553,18 +553,11 @@ extern "C" {
 void skia_androidopt_blend32_16_optimized(uint32_t src, unsigned scale, uint16_t **pdst, int *pcount) __attribute__((weak));
 }
 
-#ifdef NEON_BLIT_H
-extern "C" void blitH_NEON(uint16_t *dst, int count, uint32_t src_expand, unsigned int scale);
-#endif
-
 static inline void blend32_16_row(SkPMColor src, uint16_t dst[], int count) {
     SkASSERT(count > 0);
     uint32_t src_expand = pmcolor_to_expand16(src);
     unsigned scale = SkAlpha255To256(0xFF - SkGetPackedA32(src)) >> 3;
 
-#ifdef NEON_BLIT_H
-    blitH_NEON(dst, count, src_expand, scale);
-#else
     if (skia_androidopt_blend32_16_optimized) {
         skia_androidopt_blend32_16_optimized(src_expand, scale, &dst, &count);
     }
@@ -575,7 +568,6 @@ static inline void blend32_16_row(SkPMColor src, uint16_t dst[], int count) {
         dst += 1;
         --count;
     }
-#endif
 }
 
 void SkRGB16_Blitter::blitH(int x, int y, int width) {
@@ -587,13 +579,6 @@ void SkRGB16_Blitter::blitH(int x, int y, int width) {
     blend32_16_row(fSrcColor32, device, width);
 }
 
-#ifdef NEON_BLIT_ANTI_H
-extern "C" void blitAntiH_NEON(const SkAlpha* SK_RESTRICT antialias,
-                               uint16_t * SK_RESTRICT device,
-                               const int16_t* SK_RESTRICT runs,
-                               uint32_t srcExpanded, unsigned scale);
-#endif
-
 void SkRGB16_Blitter::blitAntiH(int x, int y,
                                 const SkAlpha* SK_RESTRICT antialias,
                                 const int16_t* SK_RESTRICT runs) {
@@ -601,9 +586,6 @@ void SkRGB16_Blitter::blitAntiH(int x, int y,
     uint32_t    srcExpanded = fExpandedRaw16;
     unsigned    scale = fScale;
 
-#ifdef NEON_BLIT_ANTI_H
-    blitAntiH_NEON(antialias, device, runs, srcExpanded, scale);
-#else
     // TODO: respect fDoDither
     for (;;) {
         int count = runs[0];
@@ -627,7 +609,6 @@ void SkRGB16_Blitter::blitAntiH(int x, int y,
         }
         device += count;
     }
-#endif
 }
 
 static inline void blend_8_pixels(U8CPU bw, uint16_t dst[], unsigned dst_scale,
