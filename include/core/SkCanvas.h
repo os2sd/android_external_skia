@@ -1007,6 +1007,15 @@ public:
         bool              fDone;
     };
 
+    /**
+     DEPRECATED -- need to remove when subclass stop relying on it.
+
+     Specify a device for this canvas to draw into. If it is not null, its
+     reference count is incremented. If the canvas was already holding a
+     device, its reference count is decremented. The new device is returned.
+     */
+    virtual SkBaseDevice* setDevice(SkBaseDevice* device);
+
 protected:
     // Returns the canvas to be used by DrawIter. Default implementation
     // returns this. Subclasses that encapsulate an indirect canvas may
@@ -1027,17 +1036,6 @@ protected:
     // notify our surface (if we have one) that we are about to draw, so it
     // can perform copy-on-write or invalidate any cached images
     void predrawNotify();
-
-    /**
-     DEPRECATED -- need to remove when subclass stop relying on it.
-     Marked as 'protected' to avoid new clients using this before we can
-     completely remove it.
-
-     Specify a device for this canvas to draw into. If it is not null, its
-     reference count is incremented. If the canvas was already holding a
-     device, its reference count is decremented. The new device is returned.
-     */
-    virtual SkBaseDevice* setDevice(SkBaseDevice* device);
 
 private:
     class MCRec;
