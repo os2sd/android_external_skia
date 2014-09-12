@@ -136,6 +136,7 @@ start:
 #define GEN_ID_INC_EVAL(expression)
 #endif
 
+
 SkPaint::SkPaint() {
     // since we may have padding, we zero everything so that our memcmp() call
     // in operator== will work correctly.
