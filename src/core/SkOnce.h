@@ -64,10 +64,13 @@ inline static void compiler_barrier() {
 
 inline static void full_barrier_on_arm() {
 #ifdef SK_CPU_ARM
+#include <machine/cpu-features.h>
 #if SK_ARM_ARCH >= 7
     asm volatile("dmb" : : : "memory");
-#else
+#elif defined(ANDROID_SMP) && ANDROID_SMP == 1
     asm volatile("mcr p15, 0, %0, c7, c10, 5" : : "r" (0) : "memory");
+#else
+    compiler_barrier();
 #endif
 #endif
 }

@@ -30,6 +30,8 @@ static void S32A_D565_Opaque(uint16_t* SK_RESTRICT dst,
     SkASSERT(255 == alpha);
 
     asm volatile (
+                  __SKIA_SWITCH_TO_ARM
+                  "push    {ip}                         \n\t"
                   "1:                                   \n\t"
                   "ldr     r3, [%[src]], #4             \n\t"
                   "cmp     r3, #0xff000000              \n\t"
@@ -107,6 +109,8 @@ static void S32A_D565_Opaque(uint16_t* SK_RESTRICT dst,
                   "add     %[dst], %[dst], #2           \n\t"
                   "bne     1b                           \n\t"
                   "4:                                   \n\t"
+                  "pop     {ip}                         \n\t"
+                  __SKIA_SWITCH_TO_THUMB
                   : [dst] "+r" (dst), [src] "+r" (src), [count] "+r" (count)
                   :
                   : "memory", "cc", "r3", "r4", "r5", "r6", "r7", "ip"
@@ -120,6 +124,8 @@ static void S32A_Opaque_BlitRow32_arm(SkPMColor* SK_RESTRICT dst,
     SkASSERT(255 == alpha);
 
     asm volatile (
+                  __SKIA_SWITCH_TO_ARM
+                  "push   {r8, r9, r10, ip}          \n\t"
                   "cmp    %[count], #0               \n\t" /* comparing count with 0 */
                   "beq    3f                         \n\t" /* if zero exit */
 
@@ -198,6 +204,8 @@ static void S32A_Opaque_BlitRow32_arm(SkPMColor* SK_RESTRICT dst,
                   /* ----------------- */
 
                   "3:                                \n\t" /* <exit> */
+                  "pop    {r8, r9, r10, ip}          \n\t"
+                  __SKIA_SWITCH_TO_THUMB
                   : [dst] "+r" (dst), [src] "+r" (src), [count] "+r" (count)
                   :
                   : "cc", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "ip", "memory"
@@ -350,6 +358,8 @@ void S32A_Blend_BlitRow32_arm(SkPMColor* SK_RESTRICT dst,
                               const SkPMColor* SK_RESTRICT src,
                               int count, U8CPU alpha) {
     asm volatile (
+                  __SKIA_SWITCH_TO_ARM
+                  "push   {r8, r9 ,r10, r11, r12}    \n\t"
                   "cmp    %[count], #0               \n\t" /* comparing count with 0 */
                   "beq    3f                         \n\t" /* if zero exit */
 
@@ -477,6 +487,8 @@ void S32A_Blend_BlitRow32_arm(SkPMColor* SK_RESTRICT dst,
                   /* ----------------- */
 
                   "3:                                \n\t" /* <exit> */
+                  "pop    {r8, r9, r10, r11, r12}    \n\t"
+                  __SKIA_SWITCH_TO_THUMB
                   : [dst] "+r" (dst), [src] "+r" (src), [count] "+r" (count), [alpha] "+r" (alpha)
                   :
                   : "cc", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11", "r12", "memory"
