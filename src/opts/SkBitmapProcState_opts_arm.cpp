@@ -50,6 +50,8 @@ void SI8_D16_nofilter_DX_arm(const SkBitmapProcState& s,
         const uint16_t* SK_RESTRICT xx = (const uint16_t*)(xy + 1);
 
         asm volatile (
+            __SKIA_SWITCH_TO_ARM
+            "push       {r8, r9, r10, r11}             \n\t"
             "cmp        %[count8], #0                  \n\t"  // compare loop counter with 0
             "beq        2f                             \n\t"  // if loop counter == 0, exit
             "1:                                        \n\t"
@@ -94,6 +96,8 @@ void SI8_D16_nofilter_DX_arm(const SkBitmapProcState& s,
             "stmia      %[colors]!, {r5, r6, r8, r10}  \n\t"  // store last 8 pixels
             "bgt        1b                             \n\t"  // loop if counter > 0
             "2:                                        \n\t"
+            "pop        {r8, r9, r10, r11}             \n\t"
+            __SKIA_SWITCH_TO_THUMB
             : [xx] "+r" (xx), [count8] "+r" (count8), [colors] "+r" (colors)
             : [table] "r" (table), [srcAddr] "r" (srcAddr)
             : "memory", "cc", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11"
@@ -136,6 +140,8 @@ void SI8_opaque_D32_nofilter_DX_arm(const SkBitmapProcState& s,
         const uint16_t* xx = (const uint16_t*)(xy + 1);
 
         asm volatile (
+            __SKIA_SWITCH_TO_ARM
+            "push       {r8, r9, r10, r11}            \n\t"
             "subs       %[count], %[count], #8        \n\t"   // decrement count by 8, set flags
             "blt        2f                            \n\t"   // if count < 0, branch to singles
             "1:                                       \n\t"   // eights loop
@@ -178,6 +184,8 @@ void SI8_opaque_D32_nofilter_DX_arm(const SkBitmapProcState& s,
             "str        r6, [%[colors]], #4           \n\t"   // store pixel, update ptr
             "bne        3b                            \n\t"   // loop if counter != 0
             "4:                                       \n\t"   // exit
+            "pop        {r8, r9, r10, r11}            \n\t"
+            __SKIA_SWITCH_TO_THUMB
             : [xx] "+r" (xx), [count] "+r" (count), [colors] "+r" (colors)
             : [table] "r" (table), [srcAddr] "r" (srcAddr)
             : "memory", "cc", "r4", "r5", "r6", "r7", "r8", "r9", "r10", "r11"

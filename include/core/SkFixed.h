@@ -106,6 +106,31 @@ static inline SkFixed SkFixedCos(SkFixed radians) {
 #endif
 
 #if defined(SK_CPU_ARM32)
+
+#if defined(__thumb__) && !defined(__thumb2__)
+#  define  __SKIA_SWITCH_TO_ARM \
+            "push {r3}\n" \
+            "adr r3, 5f\n" \
+            "bx  r3\n" \
+            ".align\n" \
+            ".arm\n" \
+            "5:\n" \
+            "pop {r3}\n"
+/* note: the leading \n below is intentional */
+#  define __SKIA_SWITCH_TO_THUMB \
+            "\n" \
+            "push {r3}\n" \
+            "adr r3, 6f+1\n" \
+            "bx  r3\n" \
+            ".thumb\n" \
+            "6:\n" \
+            "pop {r3}\n"
+
+#else
+#  define  __SKIA_SWITCH_TO_ARM   /* nothing */
+#  define  __SKIA_SWITCH_TO_THUMB /* nothing */
+#endif
+
     /* This guy does not handle NaN or other obscurities, but is faster than
        than (int)(x*65536).  When built on Android with -Os, needs forcing
        to inline or we lose the speed benefit.
@@ -113,7 +138,9 @@ static inline SkFixed SkFixedCos(SkFixed radians) {
     SK_ALWAYS_INLINE SkFixed SkFloatToFixed_arm(float x)
     {
         int32_t y, z;
-        asm("movs    %1, %3, lsl #1         \n"
+        asm(
+            __SKIA_SWITCH_TO_ARM
+            "movs    %1, %3, lsl #1         \n"
             "mov     %2, #0x8E              \n"
             "sub     %1, %2, %1, lsr #24    \n"
             "mov     %2, %3, lsl #8         \n"
@@ -121,6 +148,7 @@ static inline SkFixed SkFixedCos(SkFixed radians) {
             "mov     %1, %2, lsr %1         \n"
             "it cs                          \n"
             "rsbcs   %1, %1, #0             \n"
+            __SKIA_SWITCH_TO_THUMB
             : "=r"(x), "=&r"(y), "=&r"(z)
             : "r"(x)
             : "cc"
@@ -130,9 +158,12 @@ static inline SkFixed SkFixedCos(SkFixed radians) {
     inline SkFixed SkFixedMul_arm(SkFixed x, SkFixed y)
     {
         int32_t t;
-        asm("smull  %0, %2, %1, %3          \n"
+        asm(
+            __SKIA_SWITCH_TO_ARM
+            "smull  %0, %2, %1, %3          \n"
             "mov    %0, %0, lsr #16         \n"
             "orr    %0, %0, %2, lsl #16     \n"
+            __SKIA_SWITCH_TO_THUMB
             : "=r"(x), "=&r"(y), "=r"(t)
             : "r"(x), "1"(y)
             :
